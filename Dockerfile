@@ -16,7 +16,8 @@ RUN apt-get update && apt-get install -y \
     iproute2 \
     lsb-release \
     bash-completion \
-    sudo 
+    sudo \
+    fastfetch
 
 # Install ROS tooling
 RUN apt-get update && apt-get install -y \
@@ -33,7 +34,9 @@ RUN rosdep init || true
 # Set workspace root and auto-source
 WORKDIR /root/ros_ws
 RUN echo "source /opt/ros/jazzy/setup.bash" >> /root/.bashrc && \
-    echo "source /root/ros_ws/install/setup.bash" >> /root/.bashrc
+    echo "source /root/ros_ws/install/setup.bash" >> /root/.bashrc && \
+    echo 'fastfetch' >> /root/.bashrc && \
+    echo 'echo "Welcome to KGCOE EME ROS2 Research Container"' >> /root/.bashrc
 
 CMD ["bash"]
 

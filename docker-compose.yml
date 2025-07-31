@@ -1,0 +1,40 @@
+services:
+  xserver:
+    image: dorowu/ubuntu-desktop-lxde-vnc
+    container_name: xserver-vnc
+    ports:
+      - "5901:5901" # VNC port
+      - "6901:6901" # noVNC web client
+    environment:
+      - VNC_PW=password
+    shm_size: 2g
+    networks:
+      - rosnet
+  ros:
+    image: ros-jazzy-dev
+    container_name: ros-jazzy-container
+    privileged: true
+    environment:
+      - DISPLAY=xserver:0.0
+      - QT_X11_NO_MITSHM=1
+    # volumes:
+    #   - ./ros_packages:/root/ros_ws:rw
+    devices:
+      - /dev/dri:/dev/dri
+    networks:
+      - rosnet
+    depends_on:
+      - xserver
+    stdin_open: true
+    tty: true
+    # Uncomment for NVIDIA GPU support
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+networks:
+  rosnet:
+    driver: bridge
