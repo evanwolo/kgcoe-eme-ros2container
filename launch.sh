@@ -1,24 +1,14 @@
-# Evan Wologodzew - emweee
-# ROS2 Research Image Docker Compose Launcher
-
 #!/bin/bash
+# Container entrypoint: VNC/GUI setup (runs as root inside container)
 set -e
-
-echo "=================================================="
-echo "       Running ROS2 Research Launcher v0.0! "
-echo "                  © emweee 2025"
-echo "=================================================="
-
-docker rm -f ros-jazzy-container xserver-vnc 2>/dev/null || true
-
-echo "Launching X11+VNC server and ROS multicontainer setup..."
-docker compose up -d xserver
-sleep 5
-echo "To view GUI apps, connect your VNC client to localhost:5901 (password: password)"
-echo "Or open http://localhost:6901 in your browser for noVNC web access."
-docker compose run --rm --service-ports -it ros
-
-
-#blocked by container run, will run on exit
-echo "Stopping containers..."
-docker compose down
+if [ -z "$VNC_PASSWORD" ]; then
+  export VNC_PASSWORD="ros2"
+fi
+mkdir -p /root/.vnc
+echo "$VNC_PASSWORD" | vncpasswd -f > /root/.vnc/passwd
+chmod 600 /root/.vnc/passwd
+vncserver :1 -geometry 1280x800 -depth 24
+export DISPLAY=:1
+startxfce4 &
+echo "Container started. VNC server running on :1."
+exec bash
