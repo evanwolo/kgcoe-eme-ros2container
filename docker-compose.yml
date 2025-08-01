@@ -1,29 +1,27 @@
 services:
-  xserver:
-    image: consol/ubuntu-xfce-vnc
-    container_name: xserver-vnc
-    ports:
-      - "5901:5901"  # VNC port
-      - "6901:6901"  # noVNC web client
-    environment:
-      - VNC_PW=password
-    shm_size: 2g
-    networks: [rosnet]
-
-  ros:
-    image: ros-jazzy-dev
-    container_name: ros-jazzy-container
+  ros-gui:
+    build: .
+    container_name: ros-jazzy-gui-container
     privileged: true
+    ports:
+      - "5900:5900"  # SPICE port
     environment:
-      - DISPLAY=xserver:0.0
+      - SPICE_PASSWORD=password
+      - DISPLAY=:1
       - QT_X11_NO_MITSHM=1
     devices:
       - /dev/dri:/dev/dri
     networks: [rosnet]
-    depends_on:
-      - xserver
     stdin_open: true
     tty: true
+    shm_size: 2g
+    volumes:
+      - wallpaper_vol:/usr/share/backgrounds/custom
+      - ./src:/root/ros_ws/src  # Mount your ROS2 workspace source
+    working_dir: /root/ros_ws
+ 
+volumes:
+  wallpaper_vol:
 
 networks:
   rosnet:

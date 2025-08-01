@@ -2,10 +2,10 @@
 # Host orchestration script: manages docker compose and containers
 set -e
 
-echo "=================================================="
-echo "       Running ROS2 Research Launcher v1.0! "
-echo "                  © emweee 2025"
-echo "=================================================="
+echo "=======ROS2 Research Launcher v1.0======"
+echo "     Running ROS2 Research Launcher"
+echo "             © emweee 2025"
+echo "========================================"
 
 # Clean up any old containers
 docker compose down --remove-orphans > /dev/null 2>&1 || true
@@ -17,10 +17,8 @@ docker compose up -d
 sleep 2
 
 echo "=================================================="
-echo "All containers started successfully!"
+echo "       All containers started successfully!"
 echo "=================================================="
-
-
 
 # Ensure ros-jazzy-container is running and build workspace if src exists
 if docker ps --format '{{.Names}}' | grep -q '^ros-jazzy-container$'; then
@@ -45,7 +43,7 @@ fi
 
 docker compose down
 docker rm -f ros-jazzy-container xserver-vnc ros 2>/dev/null || true
-echo "=================================================="
-echo "All containers stopped and removed."
-echo "=================================================="
+echo "\n=================================================="
+echo "       All containers stopped and removed."
+echo "==================================================\n"
 echo "Thank you for using the ROS2 Research Launcher!"

@@ -11,7 +11,7 @@ This project provides a ready-to-use Docker environment for ROS2 research at KGC
 2. [Prerequisites](#prerequisites)
 3. [Installation & Setup](#installation--setup)
 4. [Running the Container](#running-the-container)
-5. [Accessing the Desktop (VNC)](#accessing-the-desktop-vnc)
+5. [Accessing the Desktop (SPICE)](#accessing-the-desktop-spice)
 6. [Persisting Your Work](#persisting-your-work)
 7. [Stopping and Cleaning Up](#stopping-and-cleaning-up)
 8. [Troubleshooting](#troubleshooting)
@@ -23,7 +23,7 @@ This project provides a ready-to-use Docker environment for ROS2 research at KGC
 
 ## What is this?
 
-This repository provides a **Docker-based ROS2 development environment** with a full Linux desktop (XFCE) accessible via VNC. It is ideal for research, prototyping, and coursework. You should be familiar with ROS2 concepts and workflows, but no Linux or Docker expertise is required.
+This repository provides a **Docker-based ROS2 development environment** with a full Linux desktop (XFCE) accessible via SPICE. It is ideal for research, prototyping, and coursework. You should be familiar with ROS2 concepts and workflows, but no Linux or Docker expertise is required.
 
 ---
 
@@ -60,9 +60,38 @@ This repository provides a **Docker-based ROS2 development environment** with a 
 
 ## Running the Container
 
-You can use the provided **host launcher script** (recommended for beginners) or run Docker commands manually.
+You can use the new **unified launch script** (recommended) or the legacy host launcher script.
 
-### Option 1: Using the Host Launcher Script (Recommended)
+### Option 1: Using the Unified Launch Script (Recommended)
+
+The `launch.ps1` script provides a comprehensive interface for managing your ROS2 container:
+
+**Basic Usage:**
+```powershell
+# Start the container (default action)
+.\launch.ps1
+
+# Or use the batch wrapper
+launch.bat
+```
+
+**Advanced Options:**
+```powershell
+.\launch.ps1 -Help      # Show all available options
+.\launch.ps1 -Status    # Check container status
+.\launch.ps1 -Shell     # Open shell in running container
+.\launch.ps1 -Stop      # Stop the container
+.\launch.ps1 -Restart   # Restart the container
+.\launch.ps1 -Logs      # View container logs
+```
+
+The script will:
+- Build and start the container automatically
+- Display connection information
+- Show helpful ROS2 commands
+- Provide easy access to container management
+
+### Option 2: Using the Legacy Host Launcher Script
 
 1. **Run the script:**
    - On Windows: Open PowerShell, navigate to the `eme-ros-container` folder, and run:
@@ -77,10 +106,10 @@ You can use the provided **host launcher script** (recommended for beginners) or
 2. The script will:
    - Start all required containers
    - Build your ROS2 workspace (if any packages are present)
-   - Print instructions for connecting via VNC
+   - Print instructions for connecting via SPICE
    - Attach you to a shell inside the container
 
-### Option 2: Manual Docker Commands
+### Option 3: Manual Docker Commands
 
 1. **Start the containers:**
    ```sh
@@ -93,18 +122,30 @@ You can use the provided **host launcher script** (recommended for beginners) or
 
 ---
 
-## Accessing the Desktop (VNC)
+## Accessing the Desktop (SPICE)
 
-Once the container is running, you can access the Linux desktop environment in two ways:
+Once the container is running, you can access the Linux desktop environment using a SPICE client:
 
-1. **VNC Client (Recommended):**
-   - Download a VNC client (e.g., [RealVNC Viewer](https://www.realvnc.com/en/connect/download/viewer/)).
-   - Connect to `localhost:5901`.
+1. **SPICE Client (Recommended):**
+   - Download a SPICE client (see [SPICE_CLIENT_GUIDE.md](SPICE_CLIENT_GUIDE.md) for installation instructions).
+   - Connect to `localhost:5900`.
    - **Password:** `password` (default)
 
-2. **Web Browser (noVNC):**
-   - Open your browser and go to: [http://localhost:6901](http://localhost:6901)
-   - **Password:** `password`
+2. **Command Line Examples:**
+   ```bash
+   # Using remote-viewer (most common)
+   remote-viewer spice://localhost:5900
+   
+   # Using spice-gtk-client
+   spice-gtk-client --host localhost --port 5900
+   ```
+
+**Why SPICE over VNC?**
+- Better performance and compression
+- Built-in audio support
+- Clipboard sharing
+- Better multi-monitor support
+- Hardware acceleration support
 
 You will see a full Linux desktop where you can run ROS2 tools and GUIs.
 
@@ -139,7 +180,7 @@ If you used the launcher script, it will automatically stop and remove container
 ## Troubleshooting
 
 - **Docker not found:** Make sure Docker Desktop is installed and running.
-- **VNC connection refused:** Wait a few seconds after starting the container, then try again.
+- **SPICE connection refused:** Wait a few seconds after starting the container, then try again.
 - **Permission errors on Windows:** Try running PowerShell as Administrator, or use `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`.
 - **Workspace not building:** Ensure you have a `src` folder inside `/root/ros_ws` (or your mounted directory) with ROS2 packages.
 
@@ -160,7 +201,7 @@ For more help, see the [Docker documentation](https://docs.docker.com/get-starte
 | Category      | Package Names |
 |--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | System Tools | `git`, `curl`, `wget`, `nano`, `net-tools`, `iputils-ping`, `iproute2`, `lsb-release`, `bash-completion`, `sudo`, `fastfetch` |
-| Desktop      | `xfce4`, `xfce4-goodies`, `tigervnc-standalone-server`, `dbus-x11`                                                                                         |
+| Desktop      | `xfce4`, `xfce4-goodies`, `spice-vdagent`, `xserver-xspice`, `dbus-x11`                                                                                   |
 | ROS 2 Tools  | `python3-rosdep`, `python3-vcstool`, `python3-colcon-common-extensions`, `ros-jazzy-rviz2`, `ros-jazzy-rqt`, `ros-jazzy-rqt-common-plugins`, `ros-jazzy-rqt-gui`, `ros-jazzy-rqt-gui-py` |
 
 ---
@@ -170,8 +211,7 @@ For more help, see the [Docker documentation](https://docs.docker.com/get-starte
 
 | Port   | Description           |
 |--------|-----------------------|
-| 5901   | Desktop VNC Client    |
-| 6901   | Web VNC (noVNC)       |
+| 5900   | SPICE Desktop Client  |
 
 ---
 
@@ -227,11 +267,9 @@ To use a Blue Robotics tether (or any USB device) with the ROS2 container, you n
 
 **Docker Image:** A read-only template (built from a `Dockerfile`) that defines the filesystem, installed packages, and configuration for a container. Images are versioned and can be shared via registries like Docker Hub.
 
-**Docker Compose:** A tool for defining and running multi-container Docker applications using a YAML file (`docker-compose.yml`). It allows you to start, stop, and manage related services (e.g., ROS2, VNC desktop) as a group.
+**Docker Compose:** A tool for defining and running multi-container Docker applications using a YAML file (`docker-compose.yml`). It allows you to start, stop, and manage related services (e.g., ROS2, SPICE desktop) as a group.
 
-**VNC (Virtual Network Computing):** A remote desktop protocol that lets you view and control the Linux desktop running inside the container from your own computer, using a VNC client or web browser (noVNC).
-
-**noVNC:** An open-source VNC client that runs in your web browser, allowing you to access the container's desktop without installing extra software.
+**SPICE (Simple Protocol for Independent Computing Environments):** A remote desktop protocol that provides better performance, audio support, and clipboard sharing compared to VNC. It lets you view and control the Linux desktop running inside the container from your own computer using a SPICE client.
 
 **Volume Mount:** A way to link a folder on your computer to a folder inside the container, so your work is saved outside the container. Specified with the `-v` flag in Docker commands.
 
